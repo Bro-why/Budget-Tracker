@@ -1,5 +1,6 @@
 const state=JSON.parse(localStorage.getItem('pocketplan-state')||'null')||{balance:0,spending:[],income:[],subs:[],ious:[],goal:{name:'New headphones',target:180,saved:0}};
 state.income=state.income||[];
+if(state.balance===1248.5&&state.spending.length===0&&state.income.length===0&&state.subs.length===0&&state.ious.length===0&&state.goal.saved===0)state.balance=0;
 let editingIndex=null;
 const $=s=>document.querySelector(s); const money=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function persist(){localStorage.setItem('pocketplan-state',JSON.stringify(state));render()}
