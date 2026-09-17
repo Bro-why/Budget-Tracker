@@ -1,5 +1,6 @@
 const state=JSON.parse(localStorage.getItem('pocketplan-state')||'null')||{balance:0,spending:[],income:[],subs:[],ious:[],goal:{name:'New headphones',target:180,saved:0}};
 state.income=state.income||[];
+state.theme=state.theme||'normal';
 if(state.balance===1248.5&&state.spending.length===0&&state.income.length===0&&state.subs.length===0&&state.ious.length===0&&state.goal.saved===0)state.balance=0;
 let editingIndex=null;
 const $=s=>document.querySelector(s); const money=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -13,6 +14,7 @@ function render(){
  const g=state.goal,p=Math.min(100,Math.round(g.saved/g.target*100)),coins=Math.floor(g.saved),coinsNeeded=Math.ceil(Math.max(0,g.target-g.saved)); $('#goalName').textContent=g.name;$('#goalSaved').textContent=money(g.saved).replace('.00','');$('#goalTarget').textContent=money(g.target).replace('.00','');$('#goalPercent').textContent=p+'%';$('#goalMeter').style.width=p+'%';$('#goalPiggy').style.left=Math.min(92,Math.max(8,p))+'%';$('#goalRemaining').textContent=g.saved>=g.target?'You did it! 🎉':'You need '+money(g.target-g.saved)+' more';$('#coinCount').textContent=`🪙 ${coins} ${coins===1?'coin':'coins'} in piggy`;$('#coinNeed').textContent=coinsNeeded===0?'All the coins you need! 🎉':`${coinsNeeded} ${coinsNeeded===1?'coin':'coins'} to go`;
 }
 function toggle(id){$(id).classList.toggle('hidden')}
+function applyTheme(){let pirate=state.theme==='pirate';document.body.classList.toggle('pirate',pirate);$('#themeToggle').textContent=pirate?'🌈 Normal mode':'🏴‍☠️ Pirate mode';}
 function openNewSpend(){editingIndex=null;$('#saveSpend').textContent='Save';toggle('#spendForm');}
 $('#openSpendForm').onclick=openNewSpend; $('#quickAddTop').onclick=()=>{$('#spending').scrollIntoView({behavior:'smooth'});editingIndex=null;$('#saveSpend').textContent='Save';$('#spendForm').classList.remove('hidden');$('#spendName').focus()}; $('#openSubForm').onclick=()=>toggle('#subForm'); $('#openIouForm').onclick=()=>toggle('#iouForm');
 $('#saveSpend').onclick=()=>{let n=$('#spendName').value.trim(),a=Number($('#spendAmount').value),category=$('#spendCategory').value;if(!n||!a)return;if(editingIndex===null){state.spending.unshift({name:n,amount:a,category,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),emoji:{Food:'🍎',Fun:'🎮',School:'📚',Travel:'🚌',Other:'🛍️'}[category]});state.balance-=a}else{let old=state.spending[editingIndex];state.balance+=old.amount-a;old.name=n;old.amount=a;old.category=category;old.emoji={Food:'🍎',Fun:'🎮',School:'📚',Travel:'🚌',Other:'🛍️'}[category];editingIndex=null}$('#saveSpend').textContent='Save';$('#spendName').value='';$('#spendAmount').value='';toggle('#spendForm');persist()};
@@ -26,4 +28,6 @@ $('#resetAmounts').onclick=()=>{if(!confirm('Reset all expense, income, subscrip
 $('#editGoal').onclick=()=>{ $('#goalForm').classList.toggle('hidden'); $('#goalNameInput').value=state.goal.name;$('#goalTargetInput').value=state.goal.target}; $('#saveGoal').onclick=()=>{let n=$('#goalNameInput').value.trim(),t=Number($('#goalTargetInput').value);if(n&&t){state.goal.name=n;state.goal.target=t;if(state.goal.saved>=t)state.goal.saved=0;$('#goalForm').classList.add('hidden');persist()}}; $('#addToGoal').onclick=()=>{let amount=Number(prompt('How much did you save?'));if(amount>0){state.goal.saved+=amount;state.balance-=amount;if(state.goal.saved>=state.goal.target){state.goal.saved=0;alert('Goal complete! Your savings progress has reset for your next goal.')}persist()}};
 $('#openMoneyForm').onclick=()=>{toggle('#moneyForm');if(!$('#moneyForm').classList.contains('hidden'))$('#moneyAmount').focus()};
 $('#saveMoney').onclick=()=>{let a=Number($('#moneyAmount').value),source=$('#moneySource').value.trim();if(!a||a<=0||!source)return;state.balance+=a;state.income.unshift({amount:a,source,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});$('#moneyAmount').value='';$('#moneySource').value='';toggle('#moneyForm');persist()};
+$('#themeToggle').onclick=()=>{state.theme=state.theme==='pirate'?'normal':'pirate';applyTheme();persist()};
+applyTheme();
 render();
